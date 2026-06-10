@@ -1,13 +1,6 @@
 <template>
     <ion-page>
-        <ion-header>
-            <ion-toolbar color="success">
-                <ion-buttons slot="start">
-                    <ion-back-button default-href="/ganadero/fincas" />
-                </ion-buttons>
-                <ion-title>{{ finca?.nombre_finca || 'Finca' }}</ion-title>
-            </ion-toolbar>
-        </ion-header>
+        <ganadero-header :title="finca?.nombre_finca || 'Finca'" :back-href="paths.ganadero.fincas" />
 
         <ion-content class="ion-padding">
             <div v-if="loading" class="ion-text-center ion-padding">
@@ -141,10 +134,12 @@ import { useRoute } from 'vue-router'
 import {
     IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
     IonList, IonItem, IonLabel, IonSpinner, IonIcon,
-    IonButtons, IonBackButton, IonButton, IonModal
+    IonButtons, IonButton, IonModal
 } from '@ionic/vue'
 import { trashOutline } from 'ionicons/icons'
-import { ganaderoService } from '../services/ganadero'
+import { ganaderoService } from '../../services/ganadero'
+import { paths } from '../../router/paths'
+import GanaderoHeader from '../../components/ganadero/GanaderoHeader.vue'
 
 const route = useRoute()
 const idFinca = route.params.idFinca

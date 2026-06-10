@@ -1,18 +1,15 @@
 <template>
     <ion-page>
-        <ion-header>
-            <ion-toolbar color="success">
-                <ion-title>Mis Fincas</ion-title>
-                <ion-buttons slot="end">
-                    <ion-button @click="abrirModalCrear">
-                        <ion-icon :icon="addOutline" />
-                    </ion-button>
-                    <ion-button @click="handleLogout">
-                        <ion-icon :icon="logOutOutline" />
-                    </ion-button>
-                </ion-buttons>
-            </ion-toolbar>
-        </ion-header>
+        <ganadero-header :title="modoAnimales ? 'Selecciona Finca' : 'Mis Fincas'">
+            <template #actions>
+                <ion-button v-if="!modoAnimales" @click="abrirModalCrear">
+                    <ion-icon :icon="addOutline" />
+                </ion-button>
+                <ion-button v-if="!modoAnimales" @click="handleLogout">
+                    <ion-icon :icon="logOutOutline" />
+                </ion-button>
+            </template>
+        </ganadero-header>
 
         <ion-content>
             <div v-if="loading" class="ion-text-center ion-padding">
@@ -24,13 +21,13 @@
                     v-for="finca in fincas"
                     :key="finca.id_finca"
                     button
-                    @click="verAnimales(finca)"
+                    @click="abrirFinca(finca)"
                 >
                     <ion-label>
                         <h2>{{ finca.nombre_finca }}</h2>
                         <p>{{ finca.ubicacion_finca }}</p>
                     </ion-label>
-                    <ion-button fill="clear" slot="end" @click.stop="abrirModalEditar(finca)">
+                    <ion-button v-if="!modoAnimales" fill="clear" slot="end" @click.stop="abrirModalEditar(finca)">
                         <ion-icon :icon="pencilOutline" />
                     </ion-button>
                 </ion-item>
@@ -82,19 +79,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import {
     IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
     IonList, IonItem, IonLabel, IonIcon, IonSpinner,
     IonButtons, IonButton, IonModal, IonInput
 } from '@ionic/vue'
 import { addOutline, logOutOutline, pencilOutline } from 'ionicons/icons'
-import { ganaderoService } from '../services/ganadero'
-import { useAuthStore } from '../stores/auth'
+import { ganaderoService } from '../../services/ganadero'
+import { useAuthStore } from '../../stores/auth'
+import { paths } from '../../router/paths'
+import GanaderoHeader from '../../components/ganadero/GanaderoHeader.vue'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
+const modo = computed(() => route.query.modo)
+const modoAnimales = computed(() => modo.value === 'animales' || modo.value === 'reporte')
 const fincas = ref([])
 const loading = ref(true)
 const modalAbierto = ref(false)
@@ -117,8 +119,14 @@ async function cargarFincas() {
     }
 }
 
-function verAnimales(finca) {
-    router.push(`/ganadero/fincas/${finca.id_finca}/detalle`)
+function abrirFinca(finca) {
+    if (modo.value === 'reporte') {
+        router.push(paths.ganadero.reporte(finca.id_finca))
+    } else if (modo.value === 'animales') {
+        router.push(paths.ganadero.animales(finca.id_finca))
+    } else {
+        router.push(paths.ganadero.fincaDetalle(finca.id_finca))
+    }
 }
 
 function abrirModalCrear() {
@@ -163,7 +171,7 @@ async function guardar() {
 
 async function handleLogout() {
     await auth.logout()
-    router.push('/login')
+    router.push(paths.login)
 }
 
 onMounted(cargarFincas)

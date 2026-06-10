@@ -3,7 +3,7 @@
         <ion-header>
             <ion-toolbar color="success">
                 <ion-buttons slot="start">
-                    <ion-back-button :default-href="`/ganadero/fincas/${idFinca}/animales`" />
+                    <ion-back-button :default-href="paths.ayudante.animales" />
                 </ion-buttons>
                 <ion-title>{{ animal?.nombre_animal || 'Animal' }}</ion-title>
             </ion-toolbar>
@@ -15,22 +15,27 @@
             </div>
 
             <div v-else>
-                <!-- Info animal -->
                 <div class="info-card">
+                    <img
+                        v-if="animal?.foto_animal"
+                        :src="fotoUrl(animal.foto_animal)"
+                        alt="foto del animal"
+                        class="foto-animal"
+                    />
                     <h3>{{ animal?.nombre_animal || 'Sin nombre' }}</h3>
                     <p>Arete: {{ animal?.n_arete }}</p>
                     <p>Raza: {{ animal?.raza || '-' }}</p>
-                    <p>Peso actual: {{ animal?.peso }} kg</p>
+                    <p>Sexo: {{ animal?.sexo === 'M' ? 'Macho' : animal?.sexo === 'F' ? 'Hembra' : '-' }}</p>
+                    <p>Edad: {{ animal?.edad != null ? animal.edad + ' años' : '-' }}</p>
+                    <p>Peso actual: {{ animal?.peso ?? '-' }} kg</p>
                     <p>Estado: {{ animal?.estado }}</p>
                 </div>
 
-                <!-- Tabs -->
                 <ion-segment v-model="tab">
                     <ion-segment-button value="pesajes">Pesajes</ion-segment-button>
                     <ion-segment-button value="tratamientos">Tratamientos</ion-segment-button>
                 </ion-segment>
 
-                <!-- Pesajes -->
                 <div v-if="tab === 'pesajes'">
                     <ion-list>
                         <ion-item v-for="p in pesajes" :key="p.id_pesaje">
@@ -50,14 +55,15 @@
                     </div>
                 </div>
 
-                <!-- Tratamientos -->
                 <div v-if="tab === 'tratamientos'">
                     <ion-list>
                         <ion-item v-for="t in tratamientos" :key="t.id_tratamiento">
-                            <ion-label>
+                            <ion-label class="ion-text-wrap">
                                 <h3>{{ t.tipo_tratamiento }}</h3>
                                 <p>Medicamento: {{ t.medicamento || '-' }}</p>
-                                <p>Inicio: {{ t.fecha_inicio }} | Fin: {{ t.fecha_fin || 'En curso' }}</p>
+                                <p v-if="t.descripcion">Descripción: {{ t.descripcion }}</p>
+                                <p>Inicio: {{ formatFecha(t.fecha_inicio) }} | Fin: {{ t.fecha_fin ? formatFecha(t.fecha_fin) : 'En curso' }}</p>
+                                <p v-if="t.usuario">Veterinario: {{ t.usuario.nombre_usuario }} {{ t.usuario.apellido1_usuario }}</p>
                             </ion-label>
                         </ion-item>
                         <ion-item v-if="tratamientos.length === 0">
@@ -71,21 +77,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
     IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
-    IonList, IonItem, IonLabel, IonSpinner,
-    IonButtons, IonBackButton, IonSegment, IonSegmentButton
+    IonButtons, IonBackButton, IonList, IonItem, IonLabel, IonSpinner,
+    IonSegment, IonSegmentButton
 } from '@ionic/vue'
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler } from 'chart.js'
-import { ganaderoService } from '../services/ganadero'
+import { ayudanteService } from '../../services/ayudante'
+import { fotoUrl } from '../../services/media'
+import { paths } from '../../router/paths'
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler)
 
 const route = useRoute()
 const nArete = route.params.nArete
-const idFinca = route.query.idFinca
 
 const animal = ref(null)
 const pesajes = ref([])
@@ -98,9 +105,9 @@ let chartInstance = null
 async function cargarDatos() {
     try {
         const [animalRes, pesajesRes, tratamientosRes] = await Promise.all([
-            ganaderoService.getAnimal(nArete),
-            ganaderoService.getPesajes(nArete),
-            ganaderoService.getTratamientos(nArete),
+            ayudanteService.getAnimal(nArete),
+            ayudanteService.getPesajes(nArete),
+            ayudanteService.getTratamientos(nArete),
         ])
         animal.value = animalRes.data
         pesajes.value = pesajesRes.data.sort((a, b) => new Date(a.fecha_pesaje) - new Date(b.fecha_pesaje))
@@ -138,6 +145,7 @@ function renderGrafico() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: { y: { beginAtZero: false } }
         }
@@ -161,6 +169,17 @@ onMounted(cargarDatos)
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
+.foto-animal {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    max-height: 280px;
+    object-fit: contain;
+    border-radius: 10px;
+    margin: 0 auto 0.75rem;
+    background: #f4f4f4;
+}
+
 .info-card h3 {
     color: #2d6a4f;
     margin: 0 0 0.5rem;
@@ -173,7 +192,9 @@ onMounted(cargarDatos)
 }
 
 .grafico-container {
-    padding: 1rem;
+    position: relative;
+    height: 260px;
+    padding: 1rem 0;
 }
 
 .seccion-titulo {
