@@ -49,7 +49,8 @@ import {
     IonPage, IonContent, IonItem, IonLabel,
     IonInput, IonButton
 } from '@ionic/vue'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '../../stores/auth'
+import { paths } from '../../router/paths'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -67,13 +68,11 @@ async function handleLogin() {
         const rol = auth.usuario?.rol
 
         if (rol === 2) {
-            router.push('/fincas') // veterinario
+            router.push(paths.veterinario.fincas)
         } else if (rol === 1) {
-            router.push('/ganadero/menu') // ganadero
+            router.push(paths.ganadero.menu)
         } else if (rol === 3) {
-            router.push('/ayudante/finca') // ayudante (pendiente)
-        } else {
-            router.push('/fincas')
+            router.push(paths.ayudante.menu)
         }
     } catch (e) {
         error.value = e.response?.data?.message || 'Error al iniciar sesión.'

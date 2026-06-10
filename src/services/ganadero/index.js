@@ -1,4 +1,4 @@
-import api from './api'
+import api from '../api'
 
 export const ganaderoService = {
     getFincas() {
@@ -26,6 +26,10 @@ export const ganaderoService = {
     },
 
     editarAnimal(nArete, data) {
+        if (data instanceof FormData) {
+            data.append('_method', 'PUT')
+            return api.post(`/ganadero/animales/${nArete}`, data)
+        }
         return api.put(`/ganadero/animales/${nArete}`, data)
     },
 
@@ -63,11 +67,37 @@ export const ganaderoService = {
     getAnimal(nArete) {
     return api.get(`/ganadero/animales/${nArete}`)
 },
+getFoto(nArete) {
+    return api.get(`/ganadero/animales/${nArete}/foto`, { responseType: 'blob' })
+},
+registrarReporte(idFinca, cantidad) {
+    return api.post('/ganadero/reportes', { id_finca: idFinca, cantidad })
+},
 getVeterinariosAsignados(idFinca) {
     return api.get(`/ganadero/fincas/${idFinca}/veterinarios`)
 },
 
 getAyudantesAsignados(idFinca) {
     return api.get(`/ganadero/fincas/${idFinca}/ayudantes`)
+},
+
+estimarPeso(formData) {
+    return api.post('/ganadero/estimar-peso', formData)
+},
+
+crearPesaje(nArete, formData) {
+    return api.post(`/ganadero/animales/${nArete}/pesajes`, formData)
+},
+
+getRecordatorios() {
+    return api.get('/ganadero/recordatorios')
+},
+
+getTodosAnimales() {
+    return api.get('/ganadero/animales-todos')
+},
+
+programarPesaje(nArete, data) {
+    return api.put(`/ganadero/animales/${nArete}/programar`, data)
 },
 }

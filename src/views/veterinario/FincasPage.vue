@@ -49,8 +49,9 @@ import {
     IonButtons, IonButton
 } from '@ionic/vue'
 import { chevronForwardOutline, logOutOutline } from 'ionicons/icons'
-import { veterinarioService } from '../services/veterinario'
-import { useAuthStore } from '../stores/auth'
+import { veterinarioService } from '../../services/veterinario'
+import { useAuthStore } from '../../stores/auth'
+import { paths } from '../../router/paths'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -67,12 +68,12 @@ async function cargarFincas() {
 }
 
 function verAnimales(idFinca) {
-    router.push(`/fincas/${idFinca}/animales`)
+    router.push(paths.veterinario.animales(idFinca))
 }
 
 async function handleLogout() {
     await auth.logout()
-    router.push('/login')
+    router.push(paths.login)
 }
 
 onMounted(cargarFincas)
