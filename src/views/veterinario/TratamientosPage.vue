@@ -3,7 +3,7 @@
         <ion-header>
             <ion-toolbar color="success">
                 <ion-buttons slot="start">
-                    <ion-back-button :default-href="`/fincas/${idFinca}/animales`" />
+                    <ion-back-button :default-href="paths.veterinario.animales(idFinca)" />
                 </ion-buttons>
                 <ion-title>Tratamientos</ion-title>
                 <ion-buttons slot="end">
@@ -103,7 +103,8 @@ import {
     IonInput, IonTextarea, IonDatetime
 } from '@ionic/vue'
 import { addOutline } from 'ionicons/icons'
-import { veterinarioService } from '../services/veterinario'
+import { veterinarioService } from '../../services/veterinario'
+import { paths } from '../../router/paths'
 
 const route = useRoute()
 const nArete = route.params.nArete

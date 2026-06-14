@@ -3,7 +3,7 @@
         <ion-tabs>
             <ion-router-outlet />
             <ion-tab-bar slot="bottom">
-                <ion-tab-button tab="fincas" href="/fincas">
+                <ion-tab-button tab="fincas" :href="paths.veterinario.fincas">
                     <ion-icon :icon="homeOutline" />
                     <ion-label>Fincas</ion-label>
                 </ion-tab-button>
@@ -18,4 +18,5 @@ import {
     IonTabBar, IonTabButton, IonIcon, IonLabel
 } from '@ionic/vue'
 import { homeOutline } from 'ionicons/icons'
+import { paths } from '../../router/paths'
 </script>

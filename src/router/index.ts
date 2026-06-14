@@ -1,32 +1,73 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router'
 import { useAuthStore } from '../stores/auth'
-import LoginPage from '../views/LoginPage.vue'
-import DashboardPage from '../views/DashboardPage.vue'
-import FincasPage from '../views/FincasPage.vue'
-import AnimalesPage from '../views/AnimalesPage.vue'
-import TratamientosPage from '../views/TratamientosPage.vue'
-import GanaderoFincasPage from '../views/GanaderoFincasPage.vue'
-import GanaderoAnimalesPage from '../views/GanaderoAnimalesPage.vue'
-import GanaderoAnimalDetallePage from '../views/GanaderoAnimalDetallePage.vue'
-import GanaderoMenuPage from '../views/GanaderoMenuPage.vue'
-import GanaderoFincaDetallePage from '../views/GanaderoFincaDetallePage.vue'
+import LoginPage from '../views/auth/LoginPage.vue'
+import DashboardPage from '../views/veterinario/DashboardPage.vue'
+import FincasPage from '../views/veterinario/FincasPage.vue'
+import AnimalesPage from '../views/veterinario/AnimalesPage.vue'
+import TratamientosPage from '../views/veterinario/TratamientosPage.vue'
+import GanaderoLayoutPage from '../views/ganadero/LayoutPage.vue'
+import GanaderoMenuPage from '../views/ganadero/MenuPage.vue'
+import GanaderoFincasPage from '../views/ganadero/FincasPage.vue'
+import GanaderoFincaDetallePage from '../views/ganadero/FincaDetallePage.vue'
+import GanaderoAnimalesPage from '../views/ganadero/AnimalesPage.vue'
+import GanaderoAnimalDetallePage from '../views/ganadero/AnimalDetallePage.vue'
+import GanaderoReportePage from '../views/ganadero/ReportePage.vue'
+import GanaderoCapturaRapidaPage from '../views/ganadero/CapturaRapidaPage.vue'
+import GanaderoCalendarioPage from '../views/ganadero/CalendarioPage.vue'
+import GanaderoPendientesPage from '../views/ganadero/PendientesPage.vue'
+import AyudanteLayoutPage from '../views/ayudante/LayoutPage.vue'
+import AyudanteMenuPage from '../views/ayudante/MenuPage.vue'
+import AyudanteAnimalesPage from '../views/ayudante/AnimalesPage.vue'
+import AyudanteAnimalDetallePage from '../views/ayudante/AnimalDetallePage.vue'
+import AyudanteCapturaPage from '../views/ayudante/CapturaPage.vue'
+import AyudantePendientesPage from '../views/ayudante/PendientesPage.vue'
+import { paths } from './paths'
 
 const routes = [
     { path: '/', redirect: '/login' },
     { path: '/login', component: LoginPage, meta: { guest: true } },
+
+    // Veterinario
     {
-        path: '/dashboard',
+        path: '/veterinario',
         component: DashboardPage,
         meta: { requiresAuth: true },
         children: [
-            { path: '/fincas', component: FincasPage },
-            { path: '/fincas/:idFinca/animales', component: AnimalesPage },
-            { path: '/animales/:nArete/tratamientos', component: TratamientosPage },
-            { path: '/ganadero/fincas', component: GanaderoFincasPage },
-{ path: '/ganadero/fincas/:idFinca/animales', component: GanaderoAnimalesPage },
-{ path: '/ganadero/animales/:nArete/detalle', component: GanaderoAnimalDetallePage },
-{ path: '/ganadero/menu', component: GanaderoMenuPage },
-{ path: '/ganadero/fincas/:idFinca/detalle', component: GanaderoFincaDetallePage },
+            { path: 'fincas', component: FincasPage },
+            { path: 'fincas/:idFinca/animales', component: AnimalesPage },
+            { path: 'animales/:nArete/tratamientos', component: TratamientosPage },
+        ]
+    },
+
+    // Ganadero
+    {
+        path: '/ganadero',
+        component: GanaderoLayoutPage,
+        meta: { requiresAuth: true },
+        children: [
+            { path: 'menu', component: GanaderoMenuPage },
+            { path: 'captura', component: GanaderoCapturaRapidaPage },
+            { path: 'calendario', component: GanaderoCalendarioPage },
+            { path: 'pendientes', component: GanaderoPendientesPage },
+            { path: 'fincas', component: GanaderoFincasPage },
+            { path: 'fincas/:idFinca/detalle', component: GanaderoFincaDetallePage },
+            { path: 'fincas/:idFinca/animales', component: GanaderoAnimalesPage },
+            { path: 'fincas/:idFinca/reporte', component: GanaderoReportePage },
+            { path: 'animales/:nArete/detalle', component: GanaderoAnimalDetallePage },
+        ]
+    },
+
+    // Ayudante
+    {
+        path: '/ayudante',
+        component: AyudanteLayoutPage,
+        meta: { requiresAuth: true },
+        children: [
+            { path: 'menu', component: AyudanteMenuPage },
+            { path: 'captura', component: AyudanteCapturaPage },
+            { path: 'pendientes', component: AyudantePendientesPage },
+            { path: 'animales', component: AyudanteAnimalesPage },
+            { path: 'animales/:nArete/detalle', component: AyudanteAnimalDetallePage },
         ]
     },
 ]
@@ -42,7 +83,10 @@ router.beforeEach((to, from) => {
         return '/login'
     }
     if (to.meta.guest && auth.isAuthenticated) {
-        return '/dashboard'
+        const rol = auth.usuario?.rol
+        if (rol === 2) return paths.veterinario.fincas
+        if (rol === 1) return paths.ganadero.menu
+        if (rol === 3) return paths.ayudante.menu
     }
 })
 
