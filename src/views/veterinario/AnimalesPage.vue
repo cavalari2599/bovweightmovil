@@ -3,7 +3,7 @@
         <ion-header>
             <ion-toolbar color="success">
                 <ion-buttons slot="start">
-                    <ion-back-button default-href="/fincas" />
+                    <ion-back-button :default-href="paths.veterinario.fincas" />
                 </ion-buttons>
                 <ion-title>Animales</ion-title>
             </ion-toolbar>
@@ -22,6 +22,9 @@
                         button
                         @click="seleccionarAnimal(animal)"
                     >
+                        <ion-thumbnail slot="start" v-if="animal.foto_animal">
+                            <img :src="fotoUrl(animal.foto_animal)" alt="foto" />
+                        </ion-thumbnail>
                         <ion-label>
                             <h2>{{ animal.nombre_animal || 'Sin nombre' }}</h2>
                             <p>Arete: {{ animal.n_arete }} | Raza: {{ animal.raza || '-' }}</p>
@@ -39,6 +42,12 @@
 
                 <!-- Detalle del animal seleccionado -->
                 <div v-if="animalSeleccionado" class="detalle">
+                    <img
+                        v-if="animalSeleccionado.foto_animal"
+                        :src="fotoUrl(animalSeleccionado.foto_animal)"
+                        alt="foto del animal"
+                        class="foto-perfil"
+                    />
                     <div class="detalle-header">
                         <h3>{{ animalSeleccionado.nombre_animal || 'Sin nombre' }}</h3>
                         <ion-button size="small" fill="outline" color="success" @click="verTratamientos">
@@ -86,11 +95,13 @@ import { useRouter, useRoute } from 'vue-router'
 import {
     IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
     IonList, IonItem, IonLabel, IonIcon, IonSpinner,
-    IonButtons, IonBackButton, IonButton
+    IonButtons, IonBackButton, IonButton, IonThumbnail
 } from '@ionic/vue'
 import { chevronForwardOutline } from 'ionicons/icons'
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler } from 'chart.js'
-import { veterinarioService } from '../services/veterinario'
+import { veterinarioService } from '../../services/veterinario'
+import { fotoUrl } from '../../services/media'
+import { paths } from '../../router/paths'
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler)
 
@@ -164,6 +175,7 @@ function renderGrafico() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 tooltip: { enabled: true },
                 legend: { display: false }
@@ -179,7 +191,7 @@ function renderGrafico() {
 }
 
 function verTratamientos() {
-    router.push(`/animales/${animalSeleccionado.value.n_arete}/tratamientos?idFinca=${route.params.idFinca}`)
+    router.push(`${paths.veterinario.tratamientos(animalSeleccionado.value.n_arete)}?idFinca=${route.params.idFinca}`)
 }
 
 function formatFecha(fecha) {
@@ -198,6 +210,17 @@ onMounted(cargarAnimales)
     border-radius: 12px;
     margin: 1rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.foto-perfil {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    max-height: 280px;
+    object-fit: contain;
+    border-radius: 10px;
+    margin: 0 auto 0.75rem;
+    background: #f4f4f4;
 }
 
 .detalle-header {
@@ -221,6 +244,8 @@ onMounted(cargarAnimales)
 }
 
 .grafico-container {
+    position: relative;
+    height: 260px;
     padding: 1rem 0;
 }
 </style>
