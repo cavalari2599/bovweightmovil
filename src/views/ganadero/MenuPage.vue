@@ -35,7 +35,7 @@
 
         <div class="cards-wrapper">
 
-¿          <div class="card-featured" :class="{ 'card-visible': visible[0] }" @click="router.push(paths.ganadero.captura)">
+         <div class="card-featured" :class="{ 'card-visible': visible[0] }" @click="router.push(paths.ganadero.captura)">
             <div class="card-featured-left">
               <div class="featured-icon">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
