@@ -9,7 +9,7 @@ Laravel internamente llama al **ML (:8001)** y a **MySQL**, que nunca salen de l
 
 ## 0. Requisito de red
 - El **celular y la PC en la MISMA Wi-Fi**.
-- IP LAN de tu PC ahora: **192.168.0.6** (ya quedó puesta en `.env.production`).
+- IP LAN de tu PC ahora: **192.168.0.x** (ya quedó puesta en `.env.production`).
   - Si cambia (otra red/reinicio), corré `ipconfig`, mirá la "Dirección IPv4" del adaptador Wi-Fi, actualizá `.env.production` y recompilá.
 
 ## 1. Levantar los 3 servicios en la PC
