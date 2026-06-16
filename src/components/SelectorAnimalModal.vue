@@ -1,57 +1,50 @@
 <template>
-    <ion-modal :is-open="isOpen" @didDismiss="$emit('dismiss')">
-        <ion-header>
-            <ion-toolbar color="success">
-                <ion-buttons slot="start">
-                    <ion-button @click="retroceder">
-                        <ion-icon :icon="paso === 'animal' && tieneFincas ? arrowBackOutline : closeOutline" />
-                    </ion-button>
-                </ion-buttons>
-                <ion-title>{{ paso === 'finca' ? '¿En qué finca estás?' : 'Elige el animal' }}</ion-title>
-            </ion-toolbar>
-        </ion-header>
+  <Teleport to="ion-app">
+    <div v-if="isOpen" class="overlay-backdrop" @click.self="emit('dismiss')">
+      <div class="overlay-panel">
 
-        <ion-content class="ion-padding">
-            <div v-if="loading" class="ion-text-center ion-padding"><ion-spinner /></div>
+        <div class="overlay-header">
+          <div class="overlay-title">Seleccionar Animal</div>
+          <button class="overlay-close" @click="emit('dismiss')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
 
-            <!-- PASO 1: finca (solo ganadero) -->
-            <ion-list v-else-if="paso === 'finca'">
-                <ion-item button v-for="f in fincas" :key="f.id_finca" @click="elegirFinca(f)">
-                    <ion-icon :icon="homeOutline" slot="start" color="success" />
-                    <ion-label>
-                        <h3>{{ f.nombre_finca }}</h3>
-                        <p>{{ f.ubicacion_finca }}</p>
-                    </ion-label>
-                </ion-item>
-                <ion-item v-if="fincas.length === 0">
-                    <ion-label class="ion-text-center">No tienes fincas registradas.</ion-label>
-                </ion-item>
-            </ion-list>
+        <div class="overlay-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input v-model="busqueda" type="text" placeholder="Buscar por arete o nombre..." />
+        </div>
 
-            <!-- PASO 2: animal -->
-            <template v-else>
-                <p v-if="fincaSel" class="sub">Finca: {{ fincaSel.nombre_finca }}</p>
-                <ion-searchbar v-model="busqueda" placeholder="Buscar por arete o nombre" :debounce="150" />
+        <div class="overlay-list">
+          <div v-if="loading" class="overlay-loading">
+            <ion-spinner color="success" />
+          </div>
 
-                <ion-list>
-                    <ion-item button v-for="a in animalesFiltrados" :key="a.n_arete" @click="elegirAnimal(a)">
-                        <ion-thumbnail slot="start" v-if="a.foto_animal">
-                            <img :src="fotoUrl(a.foto_animal)" alt="foto" />
-                        </ion-thumbnail>
-                        <ion-icon v-else :icon="pawOutline" slot="start" color="success" />
-                        <ion-label>
-                            <h3>{{ a.nombre_animal || 'Sin nombre' }}</h3>
-                            <p>Arete: {{ a.n_arete }} · Peso actual: {{ a.peso ?? '-' }} kg</p>
-                            <p v-if="a.raza">Raza: {{ a.raza }}</p>
-                        </ion-label>
-                    </ion-item>
-                    <ion-item v-if="animalesFiltrados.length === 0">
-                        <ion-label class="ion-text-center">No hay animales en esta vista.</ion-label>
-                    </ion-item>
-                </ion-list>
-            </template>
-        </ion-content>
-    </ion-modal>
+          <div v-else-if="animalesFiltrados.length === 0" class="overlay-empty">
+            No se encontraron animales activos.
+          </div>
+
+          <div
+            v-else
+            v-for="a in animalesFiltrados"
+            :key="a.n_arete"
+            class="overlay-item"
+            @click="seleccionar(a)"
+          >
+            <div class="overlay-item-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <div class="overlay-item-info">
+              <div class="overlay-item-name">{{ a.nombre_animal || 'Sin nombre' }}</div>
+              <div class="overlay-item-meta">Arete: <strong>{{ a.n_arete }}</strong><span v-if="a.peso"> · {{ a.peso }} kg</span></div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -66,12 +59,10 @@ import { fotoUrl } from '../services/media'
 
 const props = defineProps({
     isOpen: { type: Boolean, default: false },
-    // ganadero: getFincas(), getAnimales(idFinca) | ayudante: getAnimales()
     service: { type: Object, required: true },
 })
 const emit = defineEmits(['dismiss', 'select'])
 
-// Ganadero tiene varias fincas -> paso de finca. Ayudante tiene una sola -> animal directo.
 const tieneFincas = computed(() => typeof props.service.getFincas === 'function')
 
 const paso = ref('animal')
@@ -89,7 +80,6 @@ const animalesFiltrados = computed(() => {
         (a.nombre_animal || '').toLowerCase().includes(q))
 })
 
-// Al abrir, arranca el flujo segun el rol.
 watch(() => props.isOpen, (abierto) => { if (abierto) iniciar() })
 
 async function iniciar() {
@@ -148,7 +138,6 @@ function elegirAnimal(a) {
     emit('select', a)
 }
 
-// Atras: del paso animal vuelve a finca (ganadero); si no, cierra el modal.
 function retroceder() {
     if (paso.value === 'animal' && tieneFincas.value) {
         paso.value = 'finca'
@@ -158,7 +147,147 @@ function retroceder() {
 }
 </script>
 
-<style scoped>
-.sub { color: #888; font-size: 0.85rem; margin: 0 0 0.5rem; }
-ion-thumbnail img { object-fit: cover; border-radius: 8px; }
+<style>
+.overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.overlay-panel {
+  background: #0f2318;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  border-top: 2px solid #1D9E75;
+}
+
+.overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.2rem;
+  border-bottom: 1px solid rgba(29,158,117,0.2);
+  flex-shrink: 0;
+}
+
+.overlay-title {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: Georgia, serif;
+}
+
+.overlay-close {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.7);
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.overlay-search {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1rem 1.2rem 0.5rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  flex-shrink: 0;
+}
+
+.overlay-search input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.overlay-search input::placeholder {
+  color: rgba(255,255,255,0.3);
+}
+
+.overlay-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 1.2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.overlay-loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.overlay-empty {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.overlay-item {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
+  padding: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: pointer;
+}
+
+.overlay-item:active {
+  background: rgba(255,255,255,0.1);
+}
+
+.overlay-item-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(29,158,117,0.12);
+  border: 1px solid rgba(29,158,117,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.overlay-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.overlay-item-name {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.overlay-item-meta {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.78rem;
+  margin-top: 0.1rem;
+}
+
+.overlay-item-meta strong {
+  color: rgba(255,255,255,0.85);
+}
 </style>
