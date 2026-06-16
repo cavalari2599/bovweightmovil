@@ -289,19 +289,25 @@ onUnmounted(() => {
 
 <style scoped>
 .tratamientos-page {
-    --bw-dark: #1d6045;
-    --bw-primary: #2d6a4f;
-    --bw-pale: #e7f3ec;
-    --bw-bg: #f3f7f4;
-    --bw-border: #e7ede9;
-    --bw-text: #2b3a32;
-    --bw-muted: #6f8077;
+    --bw-dark: #0f2318;
+    --bw-primary: #1D9E75;
+    --bw-pale: rgba(29, 158, 117, 0.12);
+    --bw-bg: #0f2318;
+    --bw-card: rgba(255, 255, 255, 0.05);
+    --bw-border: rgba(255, 255, 255, 0.09);
+    --bw-text: #ffffff;
+    --bw-muted: rgba(255, 255, 255, 0.5);
 }
 
 /* ── Header ── */
 .bw-toolbar {
     --background: var(--bw-dark);
     --color: #ffffff;
+    --border-width: 0;
+    border-bottom: 2px solid var(--bw-primary);
+}
+.bw-toolbar ion-title {
+    font-family: Georgia, serif;
 }
 
 .bw-brand {
@@ -329,12 +335,12 @@ onUnmounted(() => {
 }
 
 .bw-search {
-    --background: #ffffff;
+    --background: rgba(255, 255, 255, 0.06);
     --border-radius: 12px;
     --box-shadow: none;
     --color: var(--bw-text);
     --placeholder-color: var(--bw-muted);
-    --icon-color: var(--bw-muted);
+    --icon-color: var(--bw-primary);
     padding: 12px 14px 6px;
 }
 
@@ -367,7 +373,7 @@ onUnmounted(() => {
 
 /* ── Tarjetas ── */
 .trat-card {
-    background: #ffffff;
+    background: var(--bw-card);
     border: 1px solid var(--bw-border);
     border-radius: 16px;
     padding: 12px;
@@ -430,7 +436,7 @@ onUnmounted(() => {
     text-align: center;  
 }
 .trat-fechas span + span {
-    border-left: 1px solid #cbd5cf;   
+    border-left: 1px solid var(--bw-border);
 }
 
 /* ── Fondo inferior ── */
@@ -457,19 +463,22 @@ onUnmounted(() => {
 
 /* ── Modal ── */
 .bw-toolbar-modal {
-    --background: #1d6045;
+    --background: #0f2318;
     --color: #ffffff;
+    --border-width: 0;
+    border-bottom: 2px solid var(--bw-primary);
 }
 
 .modal-content {
-    --background: linear-gradient(160deg, #e6f4ec 0%, #c2eae1 55%, #98ddd0 100%);
+    --background: #0f2318;
 }
 
 .modal-content ion-input,
 .modal-content ion-textarea {
-    --background: #ffffff;
+    --background: rgba(255, 255, 255, 0.06);
+    --color: #ffffff;
     --border-radius: 16px;
-    --placeholder-color: #899891;
+    --placeholder-color: rgba(255, 255, 255, 0.4);
     --placeholder-opacity: 1;
     --padding-top: 5px;
     margin-top: 2px;
@@ -500,56 +509,58 @@ onUnmounted(() => {
     display: block;
     font-size: 0.95rem;
     font-weight: 600;
-    color: #525452;
+    color: rgba(255, 255, 255, 0.85);
     margin-bottom: 7px;
 }
 
 .modal-content ion-input ion-icon {
-    color: #98a59e;
+    color: rgba(255, 255, 255, 0.45);
     font-size: 18px;
 }
 
 .fecha-box {
-    background: #ffffff;
-    border: 1px solid #cbd5cf;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(29, 96, 69, 0.08);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
     max-width: 360px;
     margin: 0 auto;
 }
 
 /* ── Calendario  ── */
 .modal-content ion-datetime {
-    --background: #ffffff;
-    --ion-color-primary: #2d6a4f;
-    --ion-color-primary-rgb: 45, 106, 79;
+    --background: #122a1c;
+    --ion-color-primary: #1D9E75;
+    --ion-color-primary-rgb: 29, 158, 117;
     --ion-color-primary-contrast: #ffffff;
-    --title-color: #1d6045;
+    --title-color: #ffffff;
+    color: #ffffff;
     width: 100%;
 }
 
 .modal-content ion-datetime::part(calendar-day) {
-    border: 1px solid #eef3f0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     /* divisiones por día */
     border-radius: 8px;
     margin: 1px;
     font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .modal-content ion-datetime::part(calendar-day today) {
-    color: #2d6a4f;
-    border-color: #9cc7b4;
+    color: #24c290;
+    border-color: rgba(29, 158, 117, 0.5);
 }
 
 .modal-content ion-datetime::part(calendar-day active) {
-    background: #2d6a4f;
+    background: #1D9E75;
     color: #ffffff;
-    border-color: #2d6a4f;
+    border-color: #1D9E75;
 }
 
 .modal-content ion-datetime::part(month-year-button) {
-    color: #1d6045;
+    color: #ffffff;
     font-weight: 700;
 }
 
@@ -566,14 +577,14 @@ onUnmounted(() => {
     background: linear-gradient(135deg, rgba(231, 76, 60, 0.5) 0%, rgba(192, 57, 43, 0.5) 100%);
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.25);
-    color: #4e3232;
+    color: #ffe3e0;
     font-size: 13px;
     font-weight: 600;
     box-shadow: 0 3px 10px rgba(192, 57, 43, 0.18);
 }
 
 .bw-guardar {
-    --background: #2d6a4f;
+    --background: #1D9E75;
     --border-radius: 12px;
 }
 

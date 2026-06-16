@@ -2,6 +2,11 @@
     <ion-page class="fincas-page">
         <ion-header class="ion-no-border">
             <ion-toolbar class="bw-toolbar">
+                <ion-buttons slot="start">
+                    <ion-button @click="router.push(paths.veterinario.menu)">
+                        <ion-icon :icon="arrowBackOutline" />
+                    </ion-button>
+                </ion-buttons>
                 <div slot="start" class="bw-brand">
                     <img src="../../assets/cow-icon.png" alt="BovWeight CR" class="bw-brand-img" />
                 </div>
@@ -72,7 +77,7 @@ import {
 } from '@ionic/vue'
 import {
     chevronForwardOutline, logOutOutline,
-    homeOutline, locationOutline, searchOutline
+    homeOutline, locationOutline, searchOutline, arrowBackOutline
 } from 'ionicons/icons'
 import { veterinarioService } from '../../services/veterinario'
 import { useAuthStore } from '../../stores/auth'
@@ -116,18 +121,24 @@ onMounted(cargarFincas)
 
 <style scoped>
 .fincas-page {
-    --bw-dark: #1d6045;
-    --bw-primary: #2d6a4f;
-    --bw-pale: #e7f3ec;
-    --bw-bg: #f3f7f4;
-    --bw-border: #e7ede9;
-    --bw-text: #2b3a32;
-    --bw-muted: #6f8077;
+    --bw-dark: #0f2318;
+    --bw-primary: #1D9E75;
+    --bw-pale: rgba(29, 158, 117, 0.12);
+    --bw-bg: #0f2318;
+    --bw-card: rgba(255, 255, 255, 0.05);
+    --bw-border: rgba(255, 255, 255, 0.09);
+    --bw-text: #ffffff;
+    --bw-muted: rgba(255, 255, 255, 0.5);
 }
 
 .bw-toolbar {
     --background: var(--bw-dark);
     --color: #ffffff;
+    --border-width: 0;
+    border-bottom: 2px solid var(--bw-primary);
+}
+.bw-toolbar ion-title {
+    font-family: Georgia, serif;
 }
 .bw-brand {
     display: flex;
@@ -161,12 +172,12 @@ onMounted(cargarFincas)
     width: 230px;           /* ← EL LARGO del buscador */
     max-width: 65%;
     padding: 0;
-    --background: #ffffff;
+    --background: rgba(15, 35, 24, 0.85);
     --border-radius: 12px;
-    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     --color: var(--bw-text);
     --placeholder-color: var(--bw-muted);
-    --icon-color: var(--bw-muted);
+    --icon-color: var(--bw-primary);
 }
 .bw-search :deep(.searchbar-input) {
     height: 42px;
@@ -176,7 +187,7 @@ onMounted(cargarFincas)
     padding: 6px 14px 0;
 }
 .finca-card {
-    --background: #ffffff;
+    --background: var(--bw-card);
     --border-radius: 16px;
     --padding-start: 14px;
     --padding-end: 12px;
@@ -190,6 +201,7 @@ onMounted(cargarFincas)
     height: 46px;
     border-radius: 13px;
     background: var(--bw-pale);
+    border: 1px solid rgba(29, 158, 117, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;

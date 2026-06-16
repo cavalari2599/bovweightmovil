@@ -28,11 +28,12 @@ const route = useRoute()
 const router = useRouter()
 
 // Detecta la pantalla actual por la ruta
+const enMenu = computed(() => route.path.endsWith('/menu'))
 const enFincas = computed(() => route.path.endsWith('/fincas'))
 const enTratamientos = computed(() => route.path.endsWith('/tratamientos'))
 
-// La excepción: la barra NO se muestra en Fincas
-const mostrarNav = computed(() => !enFincas.value)
+// La barra NO se muestra en el menú ni en Fincas
+const mostrarNav = computed(() => !enMenu.value && !enFincas.value)
 
 // idFinca: param en Animales, query en Tratamientos
 const idFinca = computed(() => route.params.idFinca || route.query.idFinca)
@@ -64,7 +65,7 @@ function volverAAnimales() {
     display: flex;
     align-items: center;
     gap: 7px;
-    background: #40916c;        /* verde del header, más claro */
+    background: #1D9E75;        /* verde primario de la app */
     color: #ffffff;
     border: none;
     border-radius: 14px;
@@ -72,13 +73,13 @@ function volverAAnimales() {
     font-family: inherit;
     font-size: 0.9rem;
     font-weight: 600;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 4px 12px rgba(29, 158, 117, 0.3);
     cursor: pointer;
 }
 .bw-nav__btn ion-icon {
     font-size: 18px;
 }
 .bw-nav__btn:active {
-    background: #2d6a4f;
+    background: #0d6e50;
 }
 </style>

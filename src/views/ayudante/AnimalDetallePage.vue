@@ -1,7 +1,7 @@
 <template>
     <ion-page>
-        <ion-header>
-            <ion-toolbar color="success">
+        <ion-header class="ion-no-border">
+            <ion-toolbar class="bw-toolbar">
                 <ion-buttons slot="start">
                     <ion-back-button :default-href="paths.ayudante.animales" />
                 </ion-buttons>
@@ -9,7 +9,7 @@
             </ion-toolbar>
         </ion-header>
 
-        <ion-content>
+        <ion-content class="bw-content">
             <div v-if="loading" class="ion-text-center ion-padding">
                 <ion-spinner />
             </div>
@@ -135,11 +135,11 @@ function renderGrafico() {
             datasets: [{
                 label: 'Peso (kg)',
                 data,
-                borderColor: '#2d6a4f',
-                backgroundColor: 'rgba(45, 106, 79, 0.1)',
+                borderColor: '#1D9E75',
+                backgroundColor: 'rgba(29, 158, 117, 0.15)',
                 tension: 0.4,
                 fill: true,
-                pointBackgroundColor: '#2d6a4f',
+                pointBackgroundColor: '#24c290',
                 pointRadius: 5,
             }]
         },
@@ -147,7 +147,17 @@ function renderGrafico() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: false } }
+            scales: {
+                x: {
+                    ticks: { color: 'rgba(255,255,255,0.5)' },
+                    grid: { color: 'rgba(255,255,255,0.08)' }
+                },
+                y: {
+                    beginAtZero: false,
+                    ticks: { color: 'rgba(255,255,255,0.5)' },
+                    grid: { color: 'rgba(255,255,255,0.08)' }
+                }
+            }
         }
     })
 }
@@ -161,12 +171,26 @@ onMounted(cargarDatos)
 </script>
 
 <style scoped>
+.bw-toolbar {
+    --background: #0f2318;
+    --color: #ffffff;
+    --border-width: 0;
+    border-bottom: 2px solid #1D9E75;
+}
+.bw-toolbar ion-title {
+    font-family: Georgia, serif;
+}
+.bw-content {
+    --background: #0f2318;
+}
+
 .info-card {
-    background: white;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.09);
     margin: 1rem;
     padding: 1rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .foto-animal {
@@ -177,17 +201,18 @@ onMounted(cargarDatos)
     object-fit: contain;
     border-radius: 10px;
     margin: 0 auto 0.75rem;
-    background: #f4f4f4;
+    background: rgba(0, 0, 0, 0.25);
 }
 
 .info-card h3 {
-    color: #2d6a4f;
+    color: #ffffff;
+    font-family: Georgia, serif;
     margin: 0 0 0.5rem;
 }
 
 .info-card p {
     margin: 0.25rem 0;
-    color: #555;
+    color: rgba(255, 255, 255, 0.6);
     font-size: 0.9rem;
 }
 
@@ -198,9 +223,48 @@ onMounted(cargarDatos)
 }
 
 .seccion-titulo {
-    color: #555;
+    color: rgba(255, 255, 255, 0.6);
     font-size: 0.9rem;
     text-transform: uppercase;
     margin-bottom: 0.5rem;
+    padding: 0 1rem;
+}
+
+/* Segmento de tabs */
+ion-segment {
+    --background: rgba(255, 255, 255, 0.05);
+    margin: 0 1rem;
+    border-radius: 12px;
+}
+ion-segment-button {
+    --color: rgba(255, 255, 255, 0.5);
+    --color-checked: #ffffff;
+    --indicator-color: #1D9E75;
+    --border-radius: 10px;
+}
+
+/* Listas oscuras */
+ion-list {
+    background: transparent;
+    padding: 0 1rem;
+}
+ion-item {
+    --background: rgba(255, 255, 255, 0.05);
+    --color: #ffffff;
+    --border-color: rgba(255, 255, 255, 0.09);
+    --border-radius: 12px;
+    margin: 0.5rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 12px;
+}
+ion-item h3 {
+    color: #ffffff;
+    font-weight: 600;
+}
+ion-item p {
+    color: rgba(255, 255, 255, 0.5);
+}
+ion-spinner {
+    --color: #1D9E75;
 }
 </style>

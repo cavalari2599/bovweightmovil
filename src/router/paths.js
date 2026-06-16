@@ -17,6 +17,7 @@ export const paths = {
     },
 
     veterinario: {
+        menu: '/veterinario/menu',
         fincas: '/veterinario/fincas',
         animales: (idFinca) => `/veterinario/fincas/${idFinca}/animales`,
         tratamientos: (nArete) => `/veterinario/animales/${nArete}/tratamientos`,
