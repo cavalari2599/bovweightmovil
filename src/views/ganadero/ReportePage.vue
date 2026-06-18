@@ -67,14 +67,26 @@
 
     <ion-footer class="custom-flat-footer">
       <div class="footer-button-wrapper">
-        <button 
+        <button
+          type="button"
+          class="btn-share-action"
+          :disabled="seleccionados.length === 0 || generandoPDF || compartiendo"
+          @click="compartirReporte"
+        >
+          <ion-spinner v-if="compartiendo" name="crescent" color="light" />
+          <template v-else>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span>Compartir ({{ seleccionados.length }})</span>
+          </template>
+        </button>
+        <button
           type="button"
           class="btn-primary-action"
-          :disabled="seleccionados.length === 0 || generandoPDF"
+          :disabled="seleccionados.length === 0 || generandoPDF || compartiendo"
           @click="generarReporte"
         >
           <ion-spinner v-if="generandoPDF" name="crescent" color="light" />
-          <span v-else>Generar Reporte Digital ({{ seleccionados.length }})</span>
+          <span v-else>Descargar PDF ({{ seleccionados.length }})</span>
         </button>
       </div>
     </ion-footer>
@@ -86,6 +98,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { IonPage, IonContent, IonFooter, IonSpinner } from '@ionic/vue'
 import { jsPDF } from 'jspdf'
+import { Capacitor } from '@capacitor/core'
+import { Share } from '@capacitor/share'
+import { Filesystem, Directory } from '@capacitor/filesystem'
 import { ganaderoService } from '../../services/ganadero'
 import { fotoUrl } from '../../services/media'
 import { paths } from '../../router/paths'
@@ -99,6 +114,7 @@ const loading = ref(true)
 const busqueda = ref('')
 const seleccionados = ref([])
 const generandoPDF = ref(false)
+const compartiendo = ref(false)
 
 const disponibles = computed(() => animales.value.filter(a => a.estado === 'Activo'))
 
@@ -158,73 +174,123 @@ async function imgToDataUrl(nArete) {
   }
 }
 
-async function generarReporte() {
-  generandoPDF.value = true
-  try {
-    const seleccion = animales.value.filter(a => seleccionados.value.includes(a.n_arete))
-    const doc = new jsPDF()
-    const pageH = doc.internal.pageSize.getHeight()
+// Construye el PDF del lote seleccionado y devuelve el documento jsPDF.
+async function construirPDF() {
+  const seleccion = animales.value.filter(a => seleccionados.value.includes(a.n_arete))
+  const doc = new jsPDF()
+  const pageH = doc.internal.pageSize.getHeight()
+
+  doc.setFont('Helvetica', 'bold')
+  doc.setFontSize(20)
+  doc.setTextColor('#0f2318')
+  doc.text('BOVWEIGHT CR - REPORTE DE GANADO', 14, 20)
+
+  doc.setDrawColor('#1D9E75')
+  doc.setLineWidth(1)
+  doc.line(14, 23, 196, 23)
+
+  doc.setFont('Helvetica', 'normal')
+  doc.setFontSize(10)
+  doc.setTextColor('#555555')
+  doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString('es-CR')}`, 14, 30)
+  doc.text(`Volumen del Lote Seleccionado: ${seleccion.length} cabeza(s) de ganado`, 14, 35)
+
+  let y = 45
+  for (const a of seleccion) {
+    if (y > pageH - 42) { doc.addPage(); y = 20 }
+
+    doc.setDrawColor('#e5e5e5')
+    doc.setFillColor('#f9f9f9')
+    doc.rect(14, y, 36, 30, 'F')
+
+    if (a.foto_animal) {
+      const dataUrl = await imgToDataUrl(a.n_arete)
+      if (dataUrl) {
+        let fmt = dataUrl.substring(dataUrl.indexOf('/') + 1, dataUrl.indexOf(';')).toUpperCase()
+        if (fmt === 'JPG') fmt = 'JPEG'
+        try { doc.addImage(dataUrl, fmt, 15, y + 1, 34, 28) } catch { /* silenciar fallos */ }
+      }
+    }
 
     doc.setFont('Helvetica', 'bold')
-    doc.setFontSize(20)
+    doc.setFontSize(12)
     doc.setTextColor('#0f2318')
-    doc.text('BOVWEIGHT CR - REPORTE DE GANADO', 14, 20)
-    
-    doc.setDrawColor('#1D9E75')
-    doc.setLineWidth(1)
-    doc.line(14, 23, 196, 23)
+    doc.text(`${a.nombre_animal || 'Sin nombre catalogado'}`, 55, y + 6)
 
     doc.setFont('Helvetica', 'normal')
     doc.setFontSize(10)
-    doc.setTextColor('#555555')
-    doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString('es-CR')}`, 14, 30)
-    doc.text(`Volumen del Lote Seleccionado: ${seleccion.length} cabeza(s) de ganado`, 14, 35)
+    doc.setTextColor('#333333')
+    doc.text(`Código Arete Único: ${a.n_arete}`, 55, y + 13)
+    doc.text(`Raza / Cruce: ${a.raza || 'No especificada'}`, 55, y + 19)
 
-    let y = 45
-    for (const a of seleccion) {
-      if (y > pageH - 42) { doc.addPage(); y = 20 }
+    doc.setFont('Helvetica', 'bold')
+    doc.setTextColor('#1D9E75')
+    doc.text(`Peso de Registro: ${a.peso != null ? a.peso + ' kg' : 'Pendiente de pesaje'}`, 55, y + 26)
 
-      doc.setDrawColor('#e5e5e5')
-      doc.setFillColor('#f9f9f9')
-      doc.rect(14, y, 36, 30, 'F')
+    doc.setDrawColor('#eaeaea')
+    doc.setLineWidth(0.5)
+    doc.line(14, y + 34, 196, y + 34)
+    y += 40
+  }
 
-      if (a.foto_animal) {
-        const dataUrl = await imgToDataUrl(a.n_arete)
-        if (dataUrl) {
-          let fmt = dataUrl.substring(dataUrl.indexOf('/') + 1, dataUrl.indexOf(';')).toUpperCase()
-          if (fmt === 'JPG') fmt = 'JPEG'
-          try { doc.addImage(dataUrl, fmt, 15, y + 1, 34, 28) } catch { /* silenciar fallos */ }
-        }
-      }
+  // Aviso legal: la estimación es de apoyo, no sustituye báscula oficial.
+  doc.setFont('Helvetica', 'italic')
+  doc.setFontSize(8)
+  doc.setTextColor('#999999')
+  doc.text('Pesos estimados como apoyo en campo. No sustituyen una báscula oficial para transacciones formales.', 14, pageH - 10)
 
-      doc.setFont('Helvetica', 'bold')
-      doc.setFontSize(12)
-      doc.setTextColor('#0f2318')
-      doc.text(`${a.nombre_animal || 'Sin nombre catalogado'}`, 55, y + 6)
-      
-      doc.setFont('Helvetica', 'normal')
-      doc.setFontSize(10)
-      doc.setTextColor('#333333')
-      doc.text(`Código Arete Único: ${a.n_arete}`, 55, y + 13)
-      doc.text(`Raza / Cruce: ${a.raza || 'No especificada'}`, 55, y + 19)
-      
-      doc.setFont('Helvetica', 'bold')
-      doc.setTextColor('#1D9E75')
-      doc.text(`Peso de Registro: ${a.peso != null ? a.peso + ' kg' : 'Pendiente de pesaje'}`, 55, y + 26)
+  return doc
+}
 
-      doc.setDrawColor('#eaeaea')
-      doc.setLineWidth(0.5)
-      doc.line(14, y + 34, 196, y + 34)
-      y += 40
-    }
-
+async function generarReporte() {
+  generandoPDF.value = true
+  try {
+    const doc = await construirPDF()
     doc.save(`reporte-bovweight-${Date.now()}.pdf`)
-
     try {
-      await ganaderoService.registrarReporte(idFinca, seleccion.length)
+      await ganaderoService.registrarReporte(idFinca, seleccionados.value.length)
     } catch {}
   } finally {
     generandoPDF.value = false
+  }
+}
+
+// Comparte el PDF por WhatsApp / correo / etc. (Don Diego, el comprador).
+async function compartirReporte() {
+  compartiendo.value = true
+  try {
+    const doc = await construirPDF()
+    const nombre = `reporte-bovweight-${Date.now()}.pdf`
+    const titulo = 'Reporte de ganado — BovWeight CR'
+    const texto = 'Listado de ganado con peso estimado (de apoyo, no sustituye báscula oficial).'
+
+    if (Capacitor.isNativePlatform()) {
+      // Escribe el PDF en caché y comparte el archivo por la hoja nativa.
+      const base64 = doc.output('datauristring').split(',')[1]
+      const { uri } = await Filesystem.writeFile({
+        path: nombre,
+        data: base64,
+        directory: Directory.Cache,
+      })
+      await Share.share({ title: titulo, text: texto, files: [uri] })
+    } else {
+      // Web: usa Web Share con archivo si está disponible; si no, descarga.
+      const blob = doc.output('blob')
+      const file = new File([blob], nombre, { type: 'application/pdf' })
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ title: titulo, text: texto, files: [file] })
+      } else {
+        doc.save(nombre)
+      }
+    }
+
+    try {
+      await ganaderoService.registrarReporte(idFinca, seleccionados.value.length)
+    } catch {}
+  } catch (e) {
+    // Si el usuario cancela la hoja de compartir, no es un error real.
+  } finally {
+    compartiendo.value = false
   }
 }
 
@@ -362,10 +428,10 @@ ion-content { --background: #0f2318; }
   border-top: 1px solid rgba(255,255,255,0.08);
   box-shadow: none;
 }
-.footer-button-wrapper { padding: 0.8rem 1.2rem 1.2rem; background: #0f2318; }
+.footer-button-wrapper { padding: 0.8rem 1.2rem 1.2rem; background: #0f2318; display: flex; gap: 0.6rem; }
 
 .btn-primary-action {
-  width: 100%; height: 50px; background: #1D9E75; color: white;
+  flex: 1; height: 50px; background: #1D9E75; color: white;
   border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 700;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 12px rgba(29, 158, 117, 0.2);
@@ -374,5 +440,16 @@ ion-content { --background: #0f2318; }
 .btn-primary-action:disabled {
   background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.25);
   box-shadow: none; cursor: not-allowed;
+}
+
+.btn-share-action {
+  flex: 1; height: 50px; background: transparent; color: #24c290;
+  border: 1px solid rgba(36, 194, 144, 0.5); border-radius: 12px;
+  font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+}
+.btn-share-action:active:not(:disabled) { background: rgba(36, 194, 144, 0.08); }
+.btn-share-action:disabled {
+  border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.25); cursor: not-allowed;
 }
 </style>

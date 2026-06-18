@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from '@ionic/vue-router'
 import { useAuthStore } from '../stores/auth'
 import LoginPage from '../views/auth/LoginPage.vue'
 import DashboardPage from '../views/veterinario/DashboardPage.vue'
+import VeterinarioMenuPage from '../views/veterinario/MenuPage.vue'
 import FincasPage from '../views/veterinario/FincasPage.vue'
 import AnimalesPage from '../views/veterinario/AnimalesPage.vue'
 import TratamientosPage from '../views/veterinario/TratamientosPage.vue'
@@ -33,6 +34,7 @@ const routes = [
         component: DashboardPage,
         meta: { requiresAuth: true },
         children: [
+            { path: 'menu', component: VeterinarioMenuPage },
             { path: 'fincas', component: FincasPage },
             { path: 'fincas/:idFinca/animales', component: AnimalesPage },
             { path: 'animales/:nArete/tratamientos', component: TratamientosPage },
@@ -84,7 +86,7 @@ router.beforeEach((to, from) => {
     }
     if (to.meta.guest && auth.isAuthenticated) {
         const rol = auth.usuario?.rol
-        if (rol === 2) return paths.veterinario.fincas
+        if (rol === 2) return paths.veterinario.menu
         if (rol === 1) return paths.ganadero.menu
         if (rol === 3) return paths.ayudante.menu
     }

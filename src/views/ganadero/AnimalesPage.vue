@@ -82,7 +82,7 @@
             <button class="btn-primary" @click="abrirModalCrear">Registrar primer animal</button>
           </div>
 
-¿          <div
+         <div
             v-for="(animal, i) in animalesFiltrados"
             :key="animal.n_arete"
             class="animal-card"

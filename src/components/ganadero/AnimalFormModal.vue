@@ -12,10 +12,11 @@
       <div class="modal-custom-body">
         
         <div class="form-block-group">
-          <label class="field-label-custom">Número de Arete Único:</label>
+          <label class="field-label-custom">Número de Arete Oficial (SENASA):</label>
           <div class="custom-input-box-wrapper" :class="{ 'input-disabled-state': esEdicion }">
-            <input v-model="form.n_arete" type="text" :disabled="esEdicion" placeholder="Ej: ARETE-000" />
+            <input v-model="form.n_arete" type="text" inputmode="numeric" :disabled="esEdicion" placeholder="Ej: 188000000000001" />
           </div>
+          <p v-if="!esEdicion" class="hint-text-muted">15 dígitos, inicia con 188 (código de Costa Rica).</p>
         </div>
 
         <div class="form-block-group">
@@ -170,6 +171,7 @@ watch(() => form.value.fecha_nacimiento, (fecha) => {
 watch(() => props.isOpen, (open) => {
     if (!open) return
     error.value = ''
+    guardando.value = false
     fotoFile.value = null
     if (props.animal) {
         form.value = {
@@ -191,8 +193,40 @@ function onFotoChange(e) {
     fotoFile.value = e.target.files?.[0] || null
 }
 
+// Arete oficial SENASA (DIIO): sigue el estándar ISO 11784 → 15 dígitos
+// numéricos que inician con 188, el código de país de Costa Rica.
+const ARETE_SENASA = /^188\d{12}$/
+
 async function guardar() {
     error.value = ''
+
+    // El arete solo se define al crear (en edición es la llave y va bloqueado).
+    if (!esEdicion.value) {
+        const arete = (form.value.n_arete || '').trim()
+        if (!ARETE_SENASA.test(arete)) {
+            error.value = 'El arete oficial SENASA debe tener 15 dígitos e iniciar con 188 (código de Costa Rica). Ej: 188000000000001'
+            return
+        }
+        form.value.n_arete = arete
+    }
+
+    // Validación de rangos: evita el desbordamiento numérico en la BD y da
+    // un mensaje claro en vez del error SQL crudo (SQLSTATE 22003).
+    if (form.value.peso !== '' && form.value.peso != null) {
+        const peso = Number(form.value.peso)
+        if (isNaN(peso) || peso <= 0 || peso > 2000) {
+            error.value = 'El peso debe ser un número entre 1 y 2000 kg.'
+            return
+        }
+    }
+    if (form.value.edad !== '' && form.value.edad != null && !form.value.fecha_nacimiento) {
+        const edadNum = Number(form.value.edad)
+        if (isNaN(edadNum) || edadNum < 0 || edadNum > 40) {
+            error.value = 'La edad debe ser un número entre 0 y 40 años.'
+            return
+        }
+    }
+
     guardando.value = true
     try {
         const fecha = form.value.fecha_nacimiento?.split('T')[0] || null
@@ -248,6 +282,8 @@ async function guardar() {
                 error.value = 'El número de arete ya se encuentra registrado en el sistema.'
             } else if (mensajeServidor.toLowerCase().includes('unauthorized') || mensajeServidor.toLowerCase().includes('unauthenticated')) {
                 error.value = 'Sesión expirada. Por favor, vuelva a iniciar sesión.'
+            } else if (mensajeServidor.toLowerCase().includes('out of range') || mensajeServidor.includes('22003')) {
+                error.value = 'Algún valor numérico es demasiado grande. Revise el peso y la edad.'
             } else if (mensajeServidor.toLowerCase().includes('validation')) {
                 error.value = 'Por favor, revise que los datos ingresados cumplan con el formato correcto.'
             } else {
@@ -258,6 +294,9 @@ async function guardar() {
         } else {
             error.value = 'Ocurrió un problema inesperado al intentar guardar el bovino.'
         }
+    } finally {
+        // Siempre libera el botón, aunque haya error: evita el "Guardando..." pegado.
+        guardando.value = false
     }
 }
 </script>
@@ -388,6 +427,13 @@ async function guardar() {
   color: #24c290;
   font-size: 0.78rem;
   font-weight: 600;
+  margin: 0.1rem 0 0 0.2rem;
+}
+
+.hint-text-muted {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.76rem;
+  font-weight: 500;
   margin: 0.1rem 0 0 0.2rem;
 }
 

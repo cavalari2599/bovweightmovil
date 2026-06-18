@@ -210,6 +210,7 @@ import {
 import { ganaderoService } from '../../services/ganadero'
 import { fotoUrl } from '../../services/media'
 import { paths } from '../../router/paths'
+import { sincronizarRecordatorios } from '../../services/notificaciones'
 
 const router = useRouter()
 const loading = ref(true)
@@ -294,6 +295,8 @@ async function cargar() {
   try {
     const { data } = await ganaderoService.getRecordatorios()
     recordatorios.value = data
+    // Agenda notificaciones nativas para los recordatorios futuros.
+    sincronizarRecordatorios(data)
   } catch {
     recordatorios.value = []
   } finally {

@@ -79,7 +79,7 @@
 
             <div class="warning-estimation-box">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e6b422" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span>Este valor es un soporte digital aproximado. Si usó una báscula física y conoce el peso exacto, modifíquelo abajo:</span>
+              <span>Este valor es un soporte digital aproximado y <strong>no distingue la raza</strong> del animal (un Brahman y un Holstein con la misma silueta dan un peso similar). Si usó una báscula física y conoce el peso exacto, modifíquelo abajo:</span>
             </div>
 
             <div class="input-block-group text-align-left">
@@ -209,9 +209,11 @@ const pesoValido = computed(() => Number(pesoFinal.value) > 0)
 const numeroPaso = computed(() => paso.value === 'captura' ? 1 : paso.value === 'resultado' ? 2 : paso.value === 'finca' ? 3 : 4)
 
 const animalesFiltrados = computed(() => {
+  // Solo animales activos: vendidos/muertos no pueden recibir pesaje
+  const activos = animales.value.filter(a => a.estado === 'Activo')
   const q = busqueda.value.trim().toLowerCase()
-  if (!q) return animales.value
-  return animales.value.filter(a =>
+  if (!q) return activos
+  return activos.filter(a =>
     String(a.n_arete).toLowerCase().includes(q) || (a.nombre_animal || '').toLowerCase().includes(q))
 })
 
