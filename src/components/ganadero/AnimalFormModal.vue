@@ -171,6 +171,7 @@ watch(() => form.value.fecha_nacimiento, (fecha) => {
 watch(() => props.isOpen, (open) => {
     if (!open) return
     error.value = ''
+    guardando.value = false
     fotoFile.value = null
     if (props.animal) {
         form.value = {
@@ -207,6 +208,23 @@ async function guardar() {
             return
         }
         form.value.n_arete = arete
+    }
+
+    // Validación de rangos: evita el desbordamiento numérico en la BD y da
+    // un mensaje claro en vez del error SQL crudo (SQLSTATE 22003).
+    if (form.value.peso !== '' && form.value.peso != null) {
+        const peso = Number(form.value.peso)
+        if (isNaN(peso) || peso <= 0 || peso > 2000) {
+            error.value = 'El peso debe ser un número entre 1 y 2000 kg.'
+            return
+        }
+    }
+    if (form.value.edad !== '' && form.value.edad != null && !form.value.fecha_nacimiento) {
+        const edadNum = Number(form.value.edad)
+        if (isNaN(edadNum) || edadNum < 0 || edadNum > 40) {
+            error.value = 'La edad debe ser un número entre 0 y 40 años.'
+            return
+        }
     }
 
     guardando.value = true
@@ -264,6 +282,8 @@ async function guardar() {
                 error.value = 'El número de arete ya se encuentra registrado en el sistema.'
             } else if (mensajeServidor.toLowerCase().includes('unauthorized') || mensajeServidor.toLowerCase().includes('unauthenticated')) {
                 error.value = 'Sesión expirada. Por favor, vuelva a iniciar sesión.'
+            } else if (mensajeServidor.toLowerCase().includes('out of range') || mensajeServidor.includes('22003')) {
+                error.value = 'Algún valor numérico es demasiado grande. Revise el peso y la edad.'
             } else if (mensajeServidor.toLowerCase().includes('validation')) {
                 error.value = 'Por favor, revise que los datos ingresados cumplan con el formato correcto.'
             } else {
@@ -274,6 +294,9 @@ async function guardar() {
         } else {
             error.value = 'Ocurrió un problema inesperado al intentar guardar el bovino.'
         }
+    } finally {
+        // Siempre libera el botón, aunque haya error: evita el "Guardando..." pegado.
+        guardando.value = false
     }
 }
 </script>

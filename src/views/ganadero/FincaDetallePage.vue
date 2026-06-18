@@ -237,7 +237,7 @@ async function asignarAyudante(a) {
 }
 
 async function desasignarAyudante(a) {
-    await ganaderoService.desasignarAyudante(idFinca, a.identificacion_usuario)
+    await ganaderoService.desasignarAyudante(a.identificacion_usuario)
     await cargarDatos()
 }
 
