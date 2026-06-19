@@ -9,7 +9,6 @@
           <div class="cloud cloud-2"></div>
           <div class="cloud cloud-3"></div>
 
-          <!-- Vacas -->
           <svg
             v-for="(cow, index) in cows"
             :key="cow.id"
@@ -59,21 +58,14 @@
               <circle cx="11" cy="26" r="3" fill="white" stroke="#333" stroke-width="0.3" />
               <circle cx="21" cy="26" r="3" fill="white" stroke="#333" stroke-width="0.3" />
 
-              <template v-if="!passwordFocused">
-                <circle cx="11" cy="26" r="1.5" fill="#1a1a1a"
-                  :style="{ transform: `translate(${eyeOffsets[cow.id].x}px, ${eyeOffsets[cow.id].y}px)`, transition: 'transform 0.08s ease-out' }" />
-                <circle cx="21" cy="26" r="1.5" fill="#1a1a1a"
-                  :style="{ transform: `translate(${eyeOffsets[cow.id].x}px, ${eyeOffsets[cow.id].y}px)`, transition: 'transform 0.08s ease-out' }" />
-                <circle cx="10" cy="25" r="0.6" fill="white"
-                  :style="{ transform: `translate(${eyeOffsets[cow.id].x * 0.5}px, ${eyeOffsets[cow.id].y * 0.5}px)` }" />
-                <circle cx="20" cy="25" r="0.6" fill="white"
-                  :style="{ transform: `translate(${eyeOffsets[cow.id].x * 0.5}px, ${eyeOffsets[cow.id].y * 0.5}px)` }" />
-              </template>
-
-              <template v-else>
-                <line x1="8.5" y1="26" x2="13.5" y2="26" stroke="#333" stroke-width="1.5" stroke-linecap="round" />
-                <line x1="18.5" y1="26" x2="23.5" y2="26" stroke="#333" stroke-width="1.5" stroke-linecap="round" />
-              </template>
+              <circle cx="11" cy="26" r="1.5" fill="#1a1a1a"
+                :style="{ transform: `translate(${eyeOffsets[cow.id].x}px, ${eyeOffsets[cow.id].y}px)`, transition: 'transform 0.08s ease-out' }" />
+              <circle cx="21" cy="26" r="1.5" fill="#1a1a1a"
+                :style="{ transform: `translate(${eyeOffsets[cow.id].x}px, ${eyeOffsets[cow.id].y}px)`, transition: 'transform 0.08s ease-out' }" />
+              <circle cx="10" cy="25" r="0.6" fill="white"
+                :style="{ transform: `translate(${eyeOffsets[cow.id].x * 0.5}px, ${eyeOffsets[cow.id].y * 0.5}px)` }" />
+              <circle cx="20" cy="25" r="0.6" fill="white"
+                :style="{ transform: `translate(${eyeOffsets[cow.id].x * 0.5}px, ${eyeOffsets[cow.id].y * 0.5}px)` }" />
 
               <ellipse cx="16" cy="34" rx="6" ry="4" fill="#ffcdd2" stroke="#333" stroke-width="0.3" />
               <circle cx="14" cy="34" r="1" fill="#333" />
@@ -82,7 +74,6 @@
             </g>
           </svg>
 
-          <!-- Valla -->
           <div class="fence-area">
             <svg viewBox="0 0 1000 60" preserveAspectRatio="none" class="fence-svg">
               <rect x="0"   y="15" width="1000" height="6" rx="2" fill="#8B6914" />
@@ -109,45 +100,67 @@
         <div class="login-box">
           <div class="login-box__header">
             <h1>BovWeight CR</h1>
-            <h2>Iniciar Sesión</h2>
+            <h2>Nueva contraseña</h2>
           </div>
 
-          <div class="form-group">
-            <label>Correo</label>
-            <input v-model="correo" type="email" placeholder="ganadero@bovweight.com" />
-          </div>
+          <template v-if="!success">
+            <p v-if="tokenInvalido" class="error">El enlace no es válido o ha expirado. Solicita uno nuevo.</p>
 
-          <div class="form-group">
-            <label>Contraseña</label>
-            <div class="password-wrapper">
-              <input
-                v-model="clave"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="••••••••"
-                @focus="passwordFocused = true"
-                @blur="passwordFocused = false"
-              />
-              <button type="button" class="toggle-pw" @click="showPassword = !showPassword">
-                <svg v-if="!showPassword" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                </svg>
-                <svg v-else width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                  <line x1="1" y1="1" x2="23" y2="23"/>
-                </svg>
+            <template v-else>
+              <div class="form-group">
+                <label>Nueva contraseña</label>
+                <div class="password-wrapper">
+                  <input
+                    v-model="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    placeholder="••••••••"
+                  />
+                  <button type="button" class="toggle-pw" @click="showPassword = !showPassword">
+                    <svg v-if="!showPassword" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <svg v-else width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Confirmar contraseña</label>
+                <div class="password-wrapper">
+                  <input
+                    v-model="passwordConfirmation"
+                    :type="showConfirm ? 'text' : 'password'"
+                    placeholder="••••••••"
+                  />
+                  <button type="button" class="toggle-pw" @click="showConfirm = !showConfirm">
+                    <svg v-if="!showConfirm" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <svg v-else width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <p v-if="error" class="error">{{ error }}</p>
+
+              <button class="submit-btn" :disabled="loading" @click="handleSubmit">
+                {{ loading ? 'Guardando...' : 'Guardar contraseña' }}
               </button>
-            </div>
-          </div>
+            </template>
+          </template>
 
-          <p v-if="error" class="error">{{ error }}</p>
-
-          <button class="submit-btn" :disabled="loading" @click="handleLogin">
-            {{ loading ? 'Ingresando...' : 'Ingresar' }}
-          </button>
+          <p v-else class="success-msg">Tu contraseña ha sido restablecida. Ya puedes iniciar sesión.</p>
 
           <div class="link-container">
-            <router-link to="/forgot-password" class="forgot-link" style="text-decoration:none">¿Olvidaste tu contraseña?</router-link>
+            <router-link to="/login" class="forgot-link" style="text-decoration:none">Ir al inicio de sesión</router-link>
           </div>
         </div>
 
@@ -157,21 +170,24 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { IonPage, IonContent } from '@ionic/vue'
-import { useAuthStore } from '../../stores/auth'
-import { paths } from '../../router/paths'
+import { resetPassword } from '../../services/auth'
 
-const router = useRouter()
-const auth = useAuthStore()
+const route = useRoute()
+const token = route.query.token
+const correo = route.query.correo
 
-const correo = ref('')
-const clave = ref('')
+const tokenInvalido = !token || !correo
+
+const password = ref('')
+const passwordConfirmation = ref('')
+const showPassword = ref(false)
+const showConfirm = ref(false)
 const error = ref('')
 const loading = ref(false)
-const showPassword = ref(false)
-const passwordFocused = ref(false)
+const success = ref(false)
 const screenWidth = ref(window.innerWidth)
 
 const allCows = [
@@ -192,21 +208,7 @@ const cowEls = []
 const eyeOffsets = reactive(allCows.map(() => ({ x: 0, y: 0 })))
 const headAngles = reactive(allCows.map(() => 0))
 
-watch(passwordFocused, (focused) => {
-  if (!focused) {
-    allCows.forEach((cow) => {
-      eyeOffsets[cow.id].x = 0
-      eyeOffsets[cow.id].y = 0
-      headAngles[cow.id] = 0
-    })
-  }
-})
-
 function handlePointerMove(clientX, clientY) {
-  if (passwordFocused.value) {
-    allCows.forEach((cow) => { headAngles[cow.id] = 15 })
-    return
-  }
   cows.value.forEach((cow, index) => {
     const el = cowEls[index]
     if (!el) return
@@ -245,17 +247,23 @@ onUnmounted(() => {
   window.removeEventListener('resize', onResize)
 })
 
-async function handleLogin() {
+async function handleSubmit() {
   error.value = ''
+  if (password.value !== passwordConfirmation.value) {
+    error.value = 'Las contraseñas no coinciden.'
+    return
+  }
+  if (password.value.length < 8) {
+    error.value = 'La contraseña debe tener al menos 8 caracteres.'
+    return
+  }
   loading.value = true
   try {
-    await auth.login(correo.value, clave.value)
-    const rol = auth.usuario?.rol
-    if (rol === 2) router.push(paths.veterinario.fincas)
-    else if (rol === 1) router.push(paths.ganadero.menu)
-    else if (rol === 3) router.push(paths.ayudante.menu)
+    await resetPassword(token, correo, password.value, password.value)
+    success.value = true
   } catch (e) {
-    error.value = e.response?.data?.message || 'Error al iniciar sesión.'
+    const data = e.response?.data
+    error.value = data?.mensaje || data?.message || 'Ocurrió un error. Intente de nuevo.'
   } finally {
     loading.value = false
   }
@@ -343,7 +351,7 @@ h2 { color: rgba(255,255,255,0.85); font-size: 0.9rem; font-weight: 400; margin:
 
 label { display: block; margin-bottom: 0.3rem; color: rgba(255,255,255,0.9); font-size: 0.85rem; font-weight: 600; }
 
-input[type="email"], input[type="password"], input[type="text"] {
+input[type="password"], input[type="text"] {
   width: 100%; padding: 0.72rem 1rem;
   background: rgba(255,255,255,0.25);
   border: 1px solid rgba(255,255,255,0.4);
@@ -365,6 +373,11 @@ input:focus { outline: none; border-color: rgba(255,255,255,0.8); background: rg
 }
 
 .error { color: #ffe0e0; font-size: 0.82rem; text-align: center; margin: 0 0 0.4rem; }
+
+.success-msg {
+  color: rgba(255,255,255,0.95); font-size: 0.88rem; text-align: center;
+  margin: 0 0 1rem; line-height: 1.5;
+}
 
 .submit-btn {
   width: 100%; padding: 0.82rem;
