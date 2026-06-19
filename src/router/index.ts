@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router'
 import { useAuthStore } from '../stores/auth'
 import LoginPage from '../views/auth/LoginPage.vue'
+import ForgotPasswordPage from '../views/auth/ForgotPasswordPage.vue'
+import ResetPasswordPage from '../views/auth/ResetPasswordPage.vue'
 import DashboardPage from '../views/veterinario/DashboardPage.vue'
 import VeterinarioMenuPage from '../views/veterinario/MenuPage.vue'
 import FincasPage from '../views/veterinario/FincasPage.vue'
@@ -27,6 +29,8 @@ import { paths } from './paths'
 const routes = [
     { path: '/', redirect: '/login' },
     { path: '/login', component: LoginPage, meta: { guest: true } },
+    { path: '/forgot-password', component: ForgotPasswordPage, meta: { guest: true } },
+    { path: '/reset-password', component: ResetPasswordPage },
 
     // Veterinario
     {
