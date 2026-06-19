@@ -1,7 +1,7 @@
 <template>
     <ion-page>
-        <ion-header>
-            <ion-toolbar color="success">
+        <ion-header class="ion-no-border">
+            <ion-toolbar class="bw-toolbar">
                 <ion-buttons slot="start">
                     <ion-button @click="retroceder">
                         <ion-icon :icon="arrowBackOutline" />
@@ -11,7 +11,7 @@
             </ion-toolbar>
         </ion-header>
 
-        <ion-content class="ion-padding">
+        <ion-content class="ion-padding bw-content">
 
             <!-- PASO 1: foto + sexo -->
             <div v-if="paso === 'captura'" class="paso">
@@ -77,7 +77,9 @@
                     <span>
                         Este valor es una <strong>estimación</strong> a partir de la foto y
                         puede variar aproximadamente <strong>±15%</strong> respecto al peso real.
-                        No reemplaza una báscula. Si conoces el peso real, corrígelo abajo.
+                        <strong>No distingue la raza</strong> del animal (Brahman, Holstein, etc. con
+                        la misma silueta dan un peso similar). No reemplaza una báscula. Si conoces el
+                        peso real, corrígelo abajo.
                     </span>
                 </div>
 
@@ -203,9 +205,11 @@ onIonViewWillEnter(() => reiniciarTodo())
 const pesoValido = computed(() => Number(pesoFinal.value) > 0)
 
 const animalesFiltrados = computed(() => {
+    // Solo animales activos: vendidos/muertos no pueden recibir pesaje
+    const activos = animales.value.filter(a => a.estado === 'Activo')
     const q = busqueda.value.trim().toLowerCase()
-    if (!q) return animales.value
-    return animales.value.filter(a =>
+    if (!q) return activos
+    return activos.filter(a =>
         String(a.n_arete).toLowerCase().includes(q) ||
         (a.nombre_animal || '').toLowerCase().includes(q))
 })
@@ -336,83 +340,130 @@ function retroceder() {
 </script>
 
 <style scoped>
+.bw-toolbar {
+    --background: #0f2318;
+    --color: #ffffff;
+    --border-width: 0;
+    border-bottom: 2px solid #1D9E75;
+}
+.bw-toolbar ion-title {
+    font-family: Georgia, serif;
+}
+.bw-content {
+    --background: #0f2318;
+}
+
 .paso { max-width: 480px; margin: 0 auto; }
 
-.titulo { color: #2d6a4f; margin: 0.5rem 0 0.25rem; }
-.sub { color: #888; font-size: 0.85rem; margin: 0 0 1rem; }
+.titulo { color: #ffffff; font-family: Georgia, serif; margin: 0.5rem 0 0.25rem; }
+.sub { color: rgba(255, 255, 255, 0.5); font-size: 0.85rem; margin: 0 0 1rem; }
 
 .info-card {
-    background: #eef5f1;
-    border: 1px solid #cfe3d8;
+    background: rgba(29, 158, 117, 0.06);
+    border: 1px solid rgba(29, 158, 117, 0.2);
     border-radius: 12px;
     padding: 0.85rem 1rem;
     margin-bottom: 1rem;
 }
 .info-head {
     display: flex; align-items: center; gap: 0.4rem;
-    color: #2d6a4f; font-weight: 600; margin-bottom: 0.5rem;
+    color: #24c290; font-weight: 600; margin-bottom: 0.5rem;
 }
 .info-head ion-icon { font-size: 1.2rem; }
 .info-card ul { margin: 0; padding-left: 1.1rem; }
-.info-card li { color: #4a5a52; font-size: 0.82rem; margin: 0.2rem 0; }
-.info-card li strong { color: #2d6a4f; }
-.info-tip { color: #6b7b73; font-size: 0.78rem; font-style: italic; margin: 0.5rem 0 0; }
+.info-card li { color: rgba(255, 255, 255, 0.7); font-size: 0.82rem; margin: 0.2rem 0; }
+.info-card li strong { color: #24c290; }
+.info-tip { color: rgba(255, 255, 255, 0.4); font-size: 0.78rem; font-style: italic; margin: 0.5rem 0 0; }
 
 .foto-box {
     display: block;
-    border: 2px dashed #b7d3c4;
+    border: 2px dashed rgba(29, 158, 117, 0.4);
     border-radius: 14px;
     overflow: hidden;
     cursor: pointer;
-    background: #f4f8f6;
+    background: rgba(255, 255, 255, 0.04);
 }
 .preview { display: block; width: 100%; max-height: 320px; object-fit: contain; }
 .foto-placeholder {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 0.5rem; padding: 3rem 1rem; color: #2d6a4f;
+    gap: 0.5rem; padding: 3rem 1rem; color: #24c290;
 }
 .cam-icon { font-size: 3rem; }
 
-.campo-label { color: #555; font-size: 0.85rem; margin: 1rem 0 0.35rem; font-weight: 600; }
-.req { color: #c0392b; }
-.segment-error { border: 1.5px solid #c0392b; border-radius: 10px; }
+.campo-label { color: rgba(255, 255, 255, 0.85); font-size: 0.85rem; margin: 1rem 0 0.35rem; font-weight: 600; }
+.req { color: #ef5350; }
+.segment-error { border: 1.5px solid #ef5350; border-radius: 10px; }
 .aviso-sexo {
     display: flex; align-items: center; gap: 0.35rem;
-    color: #c0392b; font-size: 0.8rem; margin: 0.4rem 0 0;
+    color: #ef5350; font-size: 0.8rem; margin: 0.4rem 0 0;
+}
+
+ion-segment {
+    --background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+ion-segment-button {
+    --color: rgba(255, 255, 255, 0.5);
+    --color-checked: #ffffff;
+    --indicator-color: #1D9E75;
+    --border-radius: 8px;
 }
 
 .resultado-card {
-    background: #2d6a4f; color: #fff; border-radius: 16px;
+    background: linear-gradient(135deg, #1D9E75 0%, #0d6e50 100%);
+    color: #fff; border-radius: 16px;
     padding: 1.75rem; text-align: center; margin-bottom: 0.75rem;
+    box-shadow: 0 6px 24px rgba(29, 158, 117, 0.3);
 }
 .peso-num { font-size: 3rem; font-weight: 700; }
 .peso-unidad { font-size: 1.25rem; margin-left: 0.35rem; }
 
 .aviso-estimacion {
     display: flex; gap: 0.5rem; align-items: flex-start;
-    background: #fff6e6; border: 1px solid #f0d9a8; border-radius: 12px;
+    background: rgba(230, 180, 34, 0.08); border: 1px solid rgba(230, 180, 34, 0.25); border-radius: 12px;
     padding: 0.75rem 0.9rem; margin-bottom: 0.75rem;
-    color: #8a6d1f; font-size: 0.82rem; line-height: 1.35;
+    color: #e6b422; font-size: 0.82rem; line-height: 1.35;
 }
-.aviso-estimacion ion-icon { font-size: 1.3rem; flex-shrink: 0; color: #d4a017; margin-top: 1px; }
-.aviso-estimacion strong { color: #6b540f; }
+.aviso-estimacion ion-icon { font-size: 1.3rem; flex-shrink: 0; color: #e6b422; margin-top: 1px; }
+.aviso-estimacion strong { color: #f0c850; }
 
-.corregir { --background: #fff; border-radius: 10px; margin-top: 0.5rem; }
+.corregir {
+    --background: rgba(255, 255, 255, 0.05);
+    --color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 10px; margin-top: 0.5rem;
+}
 
-.btn-primario { --background: #2d6a4f; --border-radius: 10px; font-weight: 600; }
-.btn-sec { --color: #2d6a4f; --border-color: #2d6a4f; margin-top: 0.5rem; }
-.btn-link { --color: #888; margin-top: 0.25rem; }
+.btn-primario { --background: #1D9E75; --border-radius: 10px; font-weight: 600; }
+.btn-sec { --color: #24c290; --border-color: rgba(36, 194, 144, 0.5); margin-top: 0.5rem; }
+.btn-link { --color: rgba(255, 255, 255, 0.5); margin-top: 0.25rem; }
 
-.ok-icon { font-size: 4.5rem; color: #2d6a4f; margin-top: 1.5rem; }
-.offline-icon { color: #b8860b; }
+.ok-icon { font-size: 4.5rem; color: #24c290; margin-top: 1.5rem; }
+.offline-icon { color: #e6b422; }
 
 .banner-offline {
     display: flex; gap: 0.5rem; align-items: flex-start;
-    background: #fff6e6; border: 1px solid #f0d9a8; border-radius: 12px;
+    background: rgba(230, 180, 34, 0.08); border: 1px solid rgba(230, 180, 34, 0.25); border-radius: 12px;
     padding: 0.7rem 0.9rem; margin-bottom: 1rem;
-    color: #8a6d1f; font-size: 0.82rem; line-height: 1.35;
+    color: #e6b422; font-size: 0.82rem; line-height: 1.35;
 }
-.banner-offline ion-icon { font-size: 1.3rem; flex-shrink: 0; color: #d4a017; }
+.banner-offline ion-icon { font-size: 1.3rem; flex-shrink: 0; color: #e6b422; }
 
-.error { color: #c0392b; text-align: center; font-size: 0.85rem; margin-top: 1rem; }
+ion-list {
+    background: transparent;
+}
+ion-list ion-item {
+    --background: rgba(255, 255, 255, 0.05);
+    --color: #ffffff;
+    --border-color: rgba(255, 255, 255, 0.09);
+    --border-radius: 12px;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 12px;
+}
+ion-list ion-item h3 { color: #ffffff; font-weight: 600; }
+ion-list ion-item p { color: rgba(255, 255, 255, 0.5); }
+ion-spinner { --color: #1D9E75; }
+
+.error { color: #ef5350; text-align: center; font-size: 0.85rem; margin-top: 1rem; }
 </style>

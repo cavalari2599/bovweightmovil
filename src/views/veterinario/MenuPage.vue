@@ -35,42 +35,25 @@
 
         <div class="cards-wrapper">
 
-          <div class="card-featured" :class="{ 'card-visible': visible[0] }" @click="router.push(paths.ayudante.captura)">
+          <div class="card-featured" :class="{ 'card-visible': visible[0] }" @click="router.push(paths.veterinario.fincas)">
             <div class="card-featured-left">
               <div class="featured-icon">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                  <circle cx="12" cy="13" r="4"/>
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
                 </svg>
               </div>
               <div>
-                <div class="featured-title">Captura Rápida</div>
-                <div class="featured-desc">Tomá una foto y estimá el peso al instante</div>
+                <div class="featured-title">Mis Fincas</div>
+                <div class="featured-desc">Consultá animales, pesos y tratamientos por finca</div>
               </div>
             </div>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
 
-          <div v-if="pendientesSync > 0" class="card card-warn" :class="{ 'card-visible': visible[1] }" @click="router.push(paths.ayudante.pendientes)">
-            <div class="card-left">
-              <div class="card-icon icon-warn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="16 16 12 12 8 16"/>
-                  <line x1="12" y1="12" x2="12" y2="21"/>
-                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
-                </svg>
-              </div>
-              <div>
-                <div class="card-title">Pendientes de Sync</div>
-                <div class="card-desc warn-text">{{ pendientesSync }} captura{{ pendientesSync > 1 ? 's' : '' }} sin subir</div>
-              </div>
-            </div>
-            <div class="badge pulse">{{ pendientesSync }}</div>
-          </div>
+          <div class="section-label" :class="{ 'card-visible': visible[1] }">Gestión Clínica</div>
 
-          <div class="section-label" :class="{ 'card-visible': visible[2] }">Mi Ganado</div>
-
-          <div class="card" :class="{ 'card-visible': visible[2] }" @click="router.push(paths.ayudante.animales)">
+          <div class="card" :class="{ 'card-visible': visible[1] }" @click="router.push(paths.veterinario.fincas)">
             <div class="card-left">
               <div class="card-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -78,8 +61,8 @@
                 </svg>
               </div>
               <div>
-                <div class="card-title">Ver Animales</div>
-                <div class="card-desc">Consulta animales, pesos y tratamientos</div>
+                <div class="card-title">Animales y Tratamientos</div>
+                <div class="card-desc">Entrá a una finca para ver y registrar tratamientos</div>
               </div>
             </div>
             <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -98,15 +81,11 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { IonPage, IonContent, onIonViewWillEnter } from '@ionic/vue'
 import { useAuthStore } from '../../stores/auth'
-import { ayudanteService } from '../../services/ayudante'
-import { colaPesajes } from '../../services/colaPesajes'
-import { estimarPendientes } from '../../services/sincronizar'
 import { paths } from '../../router/paths'
 
 const router = useRouter()
 const auth = useAuthStore()
-const pendientesSync = ref(0)
-const visible = ref([false, false, false])
+const visible = ref([false, false])
 
 const iniciales = computed(() => {
   const nombre = auth.usuario?.nombre || ''
@@ -120,17 +99,10 @@ const fechaHoy = computed(() => {
 })
 
 function animarEntrada() {
-  visible.value = [false, false, false]
+  visible.value = [false, false]
   visible.value.forEach((_, i) => {
     setTimeout(() => { visible.value[i] = true }, 100 + i * 80)
   })
-}
-
-async function cargarPendientes() {
-  try {
-    pendientesSync.value = await colaPesajes.contar()
-    if (navigator.onLine && pendientesSync.value > 0) estimarPendientes(ayudanteService)
-  } catch { pendientesSync.value = 0 }
 }
 
 async function handleLogout() {
@@ -138,10 +110,7 @@ async function handleLogout() {
   router.push(paths.login)
 }
 
-onIonViewWillEnter(() => {
-  cargarPendientes()
-  animarEntrada()
-})
+onIonViewWillEnter(animarEntrada)
 </script>
 
 <style scoped>
@@ -348,8 +317,6 @@ ion-content { --background: #0f2318; }
 .card.card-visible { opacity: 1; transform: translateX(0); }
 .card:active { background: rgba(255,255,255,0.1); transform: scale(0.985) !important; }
 
-.card-warn { border-color: rgba(230,126,34,0.3); }
-
 .card-left {
   display: flex;
   align-items: center;
@@ -370,12 +337,6 @@ ion-content { --background: #0f2318; }
   flex-shrink: 0;
 }
 
-.icon-warn {
-  background: rgba(230,126,34,0.12);
-  border-color: rgba(230,126,34,0.25);
-  color: #e67e22;
-}
-
 .card-title {
   font-weight: 600;
   font-size: 0.92rem;
@@ -389,31 +350,7 @@ ion-content { --background: #0f2318; }
   line-height: 1.3;
 }
 
-.warn-text { color: #e67e22 !important; font-weight: 600; }
-
 .chevron { color: rgba(255,255,255,0.2); flex-shrink: 0; }
-
-.badge {
-  min-width: 1.4rem;
-  height: 1.4rem;
-  padding: 0 0.4rem;
-  background: #e74c3c;
-  color: white;
-  border-radius: 1rem;
-  font-size: 0.74rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.pulse { animation: pulse-anim 1.8s infinite; }
-@keyframes pulse-anim {
-  0%   { box-shadow: 0 0 0 0 rgba(231,76,60,0.5); }
-  70%  { box-shadow: 0 0 0 7px rgba(231,76,60,0); }
-  100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); }
-}
 
 .footer-note {
   text-align: center;
